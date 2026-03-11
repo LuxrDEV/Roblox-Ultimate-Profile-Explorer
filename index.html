@@ -1,1218 +1,183 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8"/>
-<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>Roblox Ultimate Profile Explorer</title>
-<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;600;700;900&family=Rajdhani:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
-<style>
-  :root {
-    --bg: #07070e;
-    --bg2: #0d0d1a;
-    --card: #0f0f1e;
-    --card2: #13132a;
-    --border: #1e1e3a;
-    --blue: #00c8ff;
-    --blue2: #0084ff;
-    --pink: #ff2d6b;
-    --green: #00ffaa;
-    --yellow: #ffca28;
-    --text: #e8e8ff;
-    --muted: #5a5a8a;
-    --glow: 0 0 18px rgba(0,200,255,0.35);
-    --glow-pink: 0 0 18px rgba(255,45,107,0.35);
-  }
-  * { box-sizing: border-box; margin: 0; padding: 0; }
-  html { scroll-behavior: smooth; }
-
-  body {
-    background: var(--bg);
-    color: var(--text);
-    font-family: 'Rajdhani', sans-serif;
-    font-size: 16px;
-    min-height: 100vh;
-    overflow-x: hidden;
-  }
-
-  /* Background grid lines */
-  body::before {
-    content: '';
-    position: fixed; inset: 0;
-    background-image:
-      linear-gradient(rgba(0,200,255,0.03) 1px, transparent 1px),
-      linear-gradient(90deg, rgba(0,200,255,0.03) 1px, transparent 1px);
-    background-size: 40px 40px;
-    pointer-events: none;
-    z-index: 0;
-  }
-
-  /* HEADER */
-  header {
-    position: relative; z-index: 10;
-    padding: 24px 32px 0;
-    display: flex; align-items: center; justify-content: space-between;
-    border-bottom: 1px solid var(--border);
-    background: linear-gradient(180deg, rgba(0,200,255,0.04) 0%, transparent 100%);
-  }
-  .logo {
-    display: flex; align-items: center; gap: 12px;
-  }
-  .logo-icon {
-    width: 40px; height: 40px;
-    background: linear-gradient(135deg, var(--blue), var(--blue2));
-    border-radius: 10px;
-    display: flex; align-items: center; justify-content: center;
-    font-size: 20px;
-    box-shadow: var(--glow);
-  }
-  .logo h1 {
-    font-family: 'Orbitron', monospace;
-    font-size: 1.1rem;
-    font-weight: 900;
-    letter-spacing: 2px;
-    background: linear-gradient(90deg, var(--blue), #fff);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    white-space: nowrap;
-  }
-  .logo span {
-    display: block;
-    font-size: 0.6rem;
-    letter-spacing: 4px;
-    color: var(--muted);
-    -webkit-text-fill-color: var(--muted);
-    font-weight: 600;
-    text-transform: uppercase;
-  }
-  .header-badge {
-    font-size: 0.7rem;
-    font-family: 'Orbitron', monospace;
-    letter-spacing: 2px;
-    color: var(--muted);
-    background: var(--card);
-    border: 1px solid var(--border);
-    padding: 6px 14px;
-    border-radius: 20px;
-  }
-
-  /* SEARCH */
-  .search-section {
-    position: relative; z-index: 10;
-    padding: 36px 32px 24px;
-    display: flex; flex-direction: column; align-items: center; gap: 12px;
-  }
-  .search-label {
-    font-family: 'Orbitron', monospace;
-    font-size: 0.65rem;
-    letter-spacing: 4px;
-    color: var(--muted);
-    text-transform: uppercase;
-  }
-  .search-wrap {
-    width: 100%; max-width: 600px;
-    position: relative;
-    display: flex; gap: 0;
-  }
-  .search-wrap input {
-    flex: 1;
-    background: var(--card2);
-    border: 1px solid var(--border);
-    border-right: none;
-    border-radius: 10px 0 0 10px;
-    color: var(--text);
-    font-family: 'Rajdhani', sans-serif;
-    font-size: 1.1rem;
-    font-weight: 600;
-    padding: 14px 20px;
-    outline: none;
-    transition: border-color 0.2s, box-shadow 0.2s;
-    letter-spacing: 1px;
-  }
-  .search-wrap input::placeholder { color: var(--muted); }
-  .search-wrap input:focus {
-    border-color: var(--blue);
-    box-shadow: inset 0 0 0 1px var(--blue), var(--glow);
-  }
-  .search-btn {
-    background: linear-gradient(135deg, var(--blue), var(--blue2));
-    border: none; outline: none; cursor: pointer;
-    border-radius: 0 10px 10px 0;
-    padding: 0 28px;
-    font-family: 'Orbitron', monospace;
-    font-size: 0.75rem;
-    font-weight: 700;
-    letter-spacing: 2px;
-    color: #fff;
-    transition: filter 0.2s, transform 0.1s;
-    box-shadow: var(--glow);
-    white-space: nowrap;
-  }
-  .search-btn:hover { filter: brightness(1.2); }
-  .search-btn:active { transform: scale(0.97); }
-  .search-hint {
-    font-size: 0.78rem;
-    color: var(--muted);
-    letter-spacing: 1px;
-  }
-
-  /* LOADING */
-  #loading {
-    display: none;
-    position: fixed; inset: 0;
-    background: rgba(7,7,14,0.85);
-    z-index: 100;
-    align-items: center; justify-content: center;
-    flex-direction: column; gap: 20px;
-    backdrop-filter: blur(4px);
-  }
-  #loading.show { display: flex; }
-  .loader-ring {
-    width: 64px; height: 64px;
-    border: 3px solid var(--border);
-    border-top-color: var(--blue);
-    border-radius: 50%;
-    animation: spin 0.8s linear infinite;
-  }
-  @keyframes spin { to { transform: rotate(360deg); } }
-  .loader-text {
-    font-family: 'Orbitron', monospace;
-    font-size: 0.7rem;
-    letter-spacing: 4px;
-    color: var(--blue);
-    animation: pulse 1.2s ease-in-out infinite;
-  }
-  @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.4} }
-
-  /* ERROR / TOAST */
-  #toast {
-    position: fixed; top: 20px; right: 20px;
-    background: var(--card);
-    border: 1px solid var(--pink);
-    color: var(--pink);
-    padding: 12px 20px;
-    border-radius: 10px;
-    font-family: 'Orbitron', monospace;
-    font-size: 0.7rem;
-    letter-spacing: 2px;
-    z-index: 200;
-    transform: translateX(200%);
-    transition: transform 0.3s cubic-bezier(.34,1.56,.64,1);
-    box-shadow: var(--glow-pink);
-  }
-  #toast.show { transform: translateX(0); }
-
-  /* MAIN CONTENT */
-  #profile-root {
-    display: none;
-    position: relative; z-index: 5;
-    padding: 0 24px 60px;
-    max-width: 1400px;
-    margin: 0 auto;
-    animation: fadeIn 0.6s ease;
-  }
-  #profile-root.show { display: block; }
-  @keyframes fadeIn { from{opacity:0;transform:translateY(20px)} to{opacity:1;transform:translateY(0)} }
-
-  /* PROFILE HERO */
-  .profile-hero {
-    display: grid;
-    grid-template-columns: auto 1fr;
-    gap: 28px;
-    background: var(--card);
-    border: 1px solid var(--border);
-    border-radius: 18px;
-    padding: 28px;
-    margin-bottom: 24px;
-    position: relative;
-    overflow: hidden;
-  }
-  .profile-hero::before {
-    content: '';
-    position: absolute; top: 0; left: 0; right: 0; height: 3px;
-    background: linear-gradient(90deg, var(--blue), var(--pink), var(--blue));
-    background-size: 200% 100%;
-    animation: gradientSlide 3s linear infinite;
-  }
-  @keyframes gradientSlide { to { background-position: 200% 0; } }
-
-  .avatar-wrap {
-    position: relative;
-    display: flex; flex-direction: column; align-items: center; gap: 10px;
-  }
-  .avatar-ring {
-    width: 160px; height: 160px;
-    border-radius: 50%;
-    padding: 3px;
-    background: linear-gradient(135deg, var(--blue), var(--pink));
-    box-shadow: var(--glow), var(--glow-pink);
-    flex-shrink: 0;
-  }
-  .avatar-img {
-    width: 100%; height: 100%;
-    border-radius: 50%;
-    object-fit: cover;
-    background: var(--card2);
-    display: block;
-  }
-  .status-dot {
-    width: 10px; height: 10px; border-radius: 50%;
-    border: 2px solid var(--bg);
-    display: inline-block;
-    margin-right: 6px;
-  }
-  .status-dot.online { background: var(--green); box-shadow: 0 0 8px var(--green); }
-  .status-dot.offline { background: var(--muted); }
-  .status-dot.playing { background: var(--yellow); box-shadow: 0 0 8px var(--yellow); }
-  .status-label {
-    font-size: 0.75rem;
-    letter-spacing: 2px;
-    font-weight: 600;
-    text-transform: uppercase;
-  }
-  .status-label.online { color: var(--green); }
-  .status-label.offline { color: var(--muted); }
-  .status-label.playing { color: var(--yellow); }
-
-  .profile-info { min-width: 0; }
-  .display-name {
-    font-family: 'Orbitron', monospace;
-    font-size: 2rem;
-    font-weight: 900;
-    color: #fff;
-    line-height: 1.1;
-    word-break: break-word;
-  }
-  .username-line {
-    display: flex; align-items: center; gap: 10px;
-    margin: 4px 0 12px;
-  }
-  .at-username {
-    color: var(--blue);
-    font-size: 1.05rem;
-    font-weight: 600;
-    letter-spacing: 1px;
-  }
-  .copy-btn {
-    background: var(--card2);
-    border: 1px solid var(--border);
-    color: var(--muted);
-    border-radius: 6px;
-    padding: 3px 10px;
-    font-size: 0.7rem;
-    font-family: 'Orbitron', monospace;
-    letter-spacing: 1px;
-    cursor: pointer;
-    transition: all 0.2s;
-  }
-  .copy-btn:hover { border-color: var(--blue); color: var(--blue); }
-  .copy-btn.copied { color: var(--green); border-color: var(--green); }
-
-  .profile-meta {
-    display: flex; flex-wrap: wrap; gap: 10px;
-    margin-bottom: 14px;
-  }
-  .meta-chip {
-    background: var(--card2);
-    border: 1px solid var(--border);
-    border-radius: 8px;
-    padding: 5px 12px;
-    font-size: 0.8rem;
-    color: var(--muted);
-    font-weight: 600;
-    letter-spacing: 1px;
-    display: flex; align-items: center; gap: 6px;
-  }
-  .meta-chip span { color: var(--text); }
-  .meta-chip .icon { font-size: 0.9rem; }
-
-  .description-box {
-    background: var(--card2);
-    border: 1px solid var(--border);
-    border-radius: 10px;
-    padding: 12px 16px;
-    font-size: 0.9rem;
-    color: #aaaacc;
-    line-height: 1.5;
-    max-height: 80px;
-    overflow-y: auto;
-    word-break: break-word;
-  }
-  .description-box:empty::before { content: 'No description set.'; color: var(--muted); font-style: italic; }
-
-  /* STATS ROW */
-  .stats-row {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
-    gap: 12px;
-    margin-bottom: 24px;
-  }
-  .stat-card {
-    background: var(--card);
-    border: 1px solid var(--border);
-    border-radius: 14px;
-    padding: 18px 14px;
-    text-align: center;
-    position: relative;
-    overflow: hidden;
-    transition: border-color 0.2s, transform 0.2s;
-  }
-  .stat-card:hover { border-color: var(--blue); transform: translateY(-3px); }
-  .stat-num {
-    font-family: 'Orbitron', monospace;
-    font-size: 1.5rem;
-    font-weight: 700;
-    color: var(--blue);
-    display: block;
-  }
-  .stat-lbl {
-    font-size: 0.72rem;
-    color: var(--muted);
-    letter-spacing: 2px;
-    text-transform: uppercase;
-    font-weight: 600;
-    margin-top: 4px;
-    display: block;
-  }
-
-  /* DASHBOARD GRID */
-  .dash-grid {
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    gap: 20px;
-  }
-  @media (max-width: 900px) { .dash-grid { grid-template-columns: 1fr; } }
-  .dash-full { grid-column: 1 / -1; }
-
-  /* SECTION CARD */
-  .section-card {
-    background: var(--card);
-    border: 1px solid var(--border);
-    border-radius: 16px;
-    overflow: hidden;
-    display: flex; flex-direction: column;
-  }
-  .section-header {
-    display: flex; align-items: center; justify-content: space-between;
-    padding: 16px 20px;
-    border-bottom: 1px solid var(--border);
-    background: linear-gradient(90deg, rgba(0,200,255,0.04), transparent);
-  }
-  .section-title {
-    font-family: 'Orbitron', monospace;
-    font-size: 0.72rem;
-    font-weight: 700;
-    letter-spacing: 3px;
-    color: var(--blue);
-    text-transform: uppercase;
-    display: flex; align-items: center; gap: 8px;
-  }
-  .section-title .s-icon { font-size: 1rem; }
-  .section-count {
-    font-family: 'Orbitron', monospace;
-    font-size: 0.65rem;
-    color: var(--muted);
-    background: var(--card2);
-    border: 1px solid var(--border);
-    padding: 3px 10px;
-    border-radius: 20px;
-    letter-spacing: 1px;
-  }
-  .section-body {
-    padding: 14px;
-    flex: 1;
-    overflow-y: auto;
-    max-height: 340px;
-  }
-  .section-body::-webkit-scrollbar { width: 4px; }
-  .section-body::-webkit-scrollbar-track { background: transparent; }
-  .section-body::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
-
-  /* EMPTY STATE */
-  .empty-state {
-    text-align: center;
-    color: var(--muted);
-    padding: 32px 16px;
-    font-size: 0.85rem;
-    letter-spacing: 1px;
-  }
-  .empty-state .e-icon { font-size: 2rem; display: block; margin-bottom: 8px; opacity: 0.4; }
-
-  /* FRIENDS LIST */
-  .friend-item {
-    display: flex; align-items: center; gap: 12px;
-    padding: 9px 8px;
-    border-radius: 10px;
-    cursor: default;
-    transition: background 0.15s;
-  }
-  .friend-item:hover { background: var(--card2); }
-  .friend-thumb {
-    width: 42px; height: 42px;
-    border-radius: 50%;
-    object-fit: cover;
-    background: var(--card2);
-    flex-shrink: 0;
-    border: 2px solid var(--border);
-  }
-  .friend-name {
-    font-weight: 600;
-    font-size: 0.92rem;
-    color: var(--text);
-    letter-spacing: 0.5px;
-    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
-  }
-  .friend-status {
-    font-size: 0.72rem;
-    display: flex; align-items: center;
-    letter-spacing: 1px;
-  }
-  .friend-meta { min-width: 0; flex: 1; }
-  .search-friend-btn {
-    background: transparent;
-    border: 1px solid var(--border);
-    color: var(--muted);
-    border-radius: 6px;
-    padding: 3px 8px;
-    font-size: 0.65rem;
-    font-family: 'Orbitron', monospace;
-    letter-spacing: 1px;
-    cursor: pointer;
-    flex-shrink: 0;
-    transition: all 0.2s;
-  }
-  .search-friend-btn:hover { border-color: var(--blue); color: var(--blue); }
-
-  /* GROUPS */
-  .group-item {
-    display: flex; align-items: center; gap: 12px;
-    padding: 9px 8px;
-    border-radius: 10px;
-    transition: background 0.15s;
-  }
-  .group-item:hover { background: var(--card2); }
-  .group-icon {
-    width: 40px; height: 40px;
-    border-radius: 8px;
-    background: linear-gradient(135deg, var(--card2), var(--border));
-    display: flex; align-items: center; justify-content: center;
-    font-size: 1.2rem;
-    flex-shrink: 0;
-    overflow: hidden;
-  }
-  .group-icon img { width: 100%; height: 100%; object-fit: cover; border-radius: 8px; }
-  .group-name {
-    font-weight: 700;
-    font-size: 0.9rem;
-    color: var(--text);
-    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
-  }
-  .group-role {
-    font-size: 0.72rem;
-    color: var(--blue);
-    letter-spacing: 1px;
-    font-weight: 600;
-  }
-
-  /* BADGES */
-  .badges-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(70px, 1fr));
-    gap: 10px;
-  }
-  .badge-item {
-    display: flex; flex-direction: column; align-items: center; gap: 5px;
-    padding: 8px 4px;
-    border-radius: 10px;
-    border: 1px solid var(--border);
-    background: var(--card2);
-    transition: border-color 0.2s, transform 0.2s;
-    cursor: default;
-  }
-  .badge-item:hover { border-color: var(--yellow); transform: scale(1.05); }
-  .badge-img {
-    width: 48px; height: 48px;
-    border-radius: 8px;
-    object-fit: contain;
-    background: var(--bg);
-  }
-  .badge-name {
-    font-size: 0.6rem;
-    color: var(--muted);
-    text-align: center;
-    line-height: 1.2;
-    letter-spacing: 0.5px;
-    word-break: break-word;
-    max-width: 100%;
-  }
-
-  /* GAMES */
-  .game-item {
-    display: flex; align-items: center; gap: 12px;
-    padding: 10px 8px;
-    border-radius: 10px;
-    transition: background 0.15s;
-  }
-  .game-item:hover { background: var(--card2); }
-  .game-thumb {
-    width: 56px; height: 40px;
-    border-radius: 8px;
-    object-fit: cover;
-    background: var(--card2);
-    flex-shrink: 0;
-    border: 1px solid var(--border);
-  }
-  .game-name {
-    font-weight: 600;
-    font-size: 0.88rem;
-    color: var(--text);
-    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
-  }
-  .game-info {
-    font-size: 0.72rem;
-    color: var(--muted);
-    letter-spacing: 1px;
-    margin-top: 2px;
-  }
-
-  /* INVENTORY */
-  .inv-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
-    gap: 10px;
-  }
-  .inv-item {
-    display: flex; flex-direction: column; align-items: center; gap: 5px;
-    padding: 8px 4px;
-    border-radius: 10px;
-    border: 1px solid var(--border);
-    background: var(--card2);
-    transition: border-color 0.2s, transform 0.15s;
-    cursor: default;
-  }
-  .inv-item:hover { border-color: var(--pink); transform: scale(1.04); }
-  .inv-img {
-    width: 52px; height: 52px;
-    object-fit: contain;
-    border-radius: 8px;
-    background: var(--bg);
-  }
-  .inv-name {
-    font-size: 0.6rem;
-    color: var(--muted);
-    text-align: center;
-    line-height: 1.2;
-    word-break: break-word;
-  }
-
-  /* ACCESSORIES */
-  .acc-item {
-    display: flex; align-items: center; gap: 12px;
-    padding: 9px 8px;
-    border-radius: 10px;
-    border: 1px solid var(--border);
-    background: var(--card2);
-    margin-bottom: 8px;
-    transition: border-color 0.2s;
-  }
-  .acc-item:hover { border-color: var(--blue); }
-  .acc-img {
-    width: 48px; height: 48px;
-    object-fit: contain;
-    background: var(--bg);
-    border-radius: 8px;
-    flex-shrink: 0;
-  }
-  .acc-name {
-    font-size: 0.85rem;
-    font-weight: 600;
-    color: var(--text);
-    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
-  }
-  .acc-id {
-    font-size: 0.7rem;
-    color: var(--muted);
-    letter-spacing: 1px;
-  }
-
-  /* RESPONSIVE */
-  @media (max-width: 640px) {
-    header { padding: 16px; flex-wrap: wrap; gap: 10px; }
-    .search-section { padding: 24px 16px 16px; }
-    #profile-root { padding: 0 12px 40px; }
-    .profile-hero { grid-template-columns: 1fr; justify-items: center; }
-    .display-name { font-size: 1.4rem; text-align: center; }
-    .username-line { justify-content: center; }
-    .profile-meta { justify-content: center; }
-    .description-box { text-align: center; }
-    .avatar-ring { width: 130px; height: 130px; }
-  }
-
-  /* SCROLLBAR */
-  ::-webkit-scrollbar { width: 6px; height: 6px; }
-  ::-webkit-scrollbar-track { background: var(--bg); }
-  ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 6px; }
-  ::-webkit-scrollbar-thumb:hover { background: var(--muted); }
-
-  /* DIVIDER */
-  .divider {
-    height: 1px;
-    background: linear-gradient(90deg, transparent, var(--border), transparent);
-    margin: 8px 0;
-  }
-
-  /* ONLINE now playing */
-  .playing-game {
-    font-size: 0.8rem;
-    color: var(--yellow);
-    letter-spacing: 1px;
-    font-weight: 600;
-    margin-top: 2px;
-    display: flex; align-items: center; gap: 6px;
-  }
-
-  /* Avatar bust section */
-  .avatar-busts {
-    display: flex; gap: 12px; align-items: flex-end; margin-top: 12px;
-  }
-  .bust-wrap {
-    display: flex; flex-direction: column; align-items: center; gap: 4px;
-  }
-  .bust-img {
-    border-radius: 10px;
-    border: 1px solid var(--border);
-    background: var(--card2);
-    object-fit: contain;
-  }
-  .bust-lbl {
-    font-size: 0.62rem;
-    color: var(--muted);
-    letter-spacing: 2px;
-    text-transform: uppercase;
-  }
-</style>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Roblox Ultimate Profile Explorer</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;600;700;900&family=Rajdhani:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" href="styles.css"/>
 </head>
 <body>
 
-<!-- LOADING OVERLAY -->
-<div id="loading">
-  <div class="loader-ring"></div>
-  <div class="loader-text" id="loading-text">FETCHING PROFILE DATA</div>
-</div>
-
-<!-- TOAST -->
-<div id="toast"></div>
-
-<!-- HEADER -->
-<header>
-  <div class="logo">
-    <div class="logo-icon">🎮</div>
-    <h1>ROBLOX<span>ULTIMATE PROFILE EXPLORER</span></h1>
-  </div>
-  <div class="header-badge">v2.0 · PUBLIC API</div>
-</header>
-
-<!-- SEARCH -->
-<div class="search-section">
-  <div class="search-label">Enter Roblox Username</div>
-  <div class="search-wrap">
-    <input type="text" id="username-input" placeholder="e.g. Builderman" autocomplete="off" spellcheck="false"/>
-    <button class="search-btn" onclick="searchUser()">SEARCH</button>
-  </div>
-  <div class="search-hint">Search any public Roblox profile · Powered by Roblox Public APIs</div>
-</div>
-
-<!-- PROFILE ROOT -->
-<div id="profile-root">
-  <!-- HERO -->
-  <div class="profile-hero" id="hero-section">
-    <div class="avatar-wrap">
-      <div class="avatar-ring">
-        <img class="avatar-img" id="hero-avatar" src="" alt="Avatar"/>
-      </div>
-      <div style="display:flex;align-items:center;gap:6px;">
-        <span class="status-dot" id="status-dot"></span>
-        <span class="status-label" id="status-label">OFFLINE</span>
-      </div>
-      <div class="playing-game" id="playing-game" style="display:none"></div>
-      <div class="avatar-busts" id="avatar-busts"></div>
-    </div>
-    <div class="profile-info">
-      <div class="display-name" id="display-name">—</div>
-      <div class="username-line">
-        <span class="at-username" id="at-username">@—</span>
-        <button class="copy-btn" id="copy-uid-btn" onclick="copyUID()">COPY UID</button>
-      </div>
-      <div class="profile-meta" id="profile-meta"></div>
-      <div class="description-box" id="description-box"></div>
-    </div>
+  <!-- LOADING OVERLAY -->
+  <div id="loading" class="loading-overlay hidden">
+    <div class="spinner"></div>
+    <p class="loading-text" id="loading-text">FETCHING DATA...</p>
   </div>
 
-  <!-- STATS -->
-  <div class="stats-row" id="stats-row">
-    <div class="stat-card">
-      <span class="stat-num" id="stat-friends">—</span>
-      <span class="stat-lbl">FRIENDS</span>
-    </div>
-    <div class="stat-card">
-      <span class="stat-num" id="stat-followers">—</span>
-      <span class="stat-lbl">FOLLOWERS</span>
-    </div>
-    <div class="stat-card">
-      <span class="stat-num" id="stat-following">—</span>
-      <span class="stat-lbl">FOLLOWING</span>
-    </div>
-    <div class="stat-card">
-      <span class="stat-num" id="stat-groups">—</span>
-      <span class="stat-lbl">GROUPS</span>
-    </div>
-    <div class="stat-card">
-      <span class="stat-num" id="stat-badges">—</span>
-      <span class="stat-lbl">BADGES</span>
-    </div>
-    <div class="stat-card">
-      <span class="stat-num" id="stat-games">—</span>
-      <span class="stat-lbl">GAMES</span>
-    </div>
-  </div>
+  <!-- TOAST -->
+  <div id="toast" class="toast"></div>
 
-  <!-- DASHBOARD GRID -->
-  <div class="dash-grid">
-
-    <!-- FRIENDS -->
-    <div class="section-card">
-      <div class="section-header">
-        <div class="section-title"><span class="s-icon">👥</span> FRIENDS</div>
-        <span class="section-count" id="cnt-friends">0</span>
-      </div>
-      <div class="section-body" id="list-friends">
-        <div class="empty-state"><span class="e-icon">👥</span>No friends loaded</div>
+  <!-- HEADER -->
+  <header class="header">
+    <div class="logo">
+      <div class="logo-icon">🎮</div>
+      <div>
+        <h1 class="logo-title">ROBLOX</h1>
+        <span class="logo-sub">ULTIMATE PROFILE EXPLORER</span>
       </div>
     </div>
+    <span class="header-badge">v3.0 · PUBLIC API</span>
+  </header>
 
-    <!-- GROUPS -->
-    <div class="section-card">
-      <div class="section-header">
-        <div class="section-title"><span class="s-icon">🏰</span> GROUPS</div>
-        <span class="section-count" id="cnt-groups">0</span>
-      </div>
-      <div class="section-body" id="list-groups">
-        <div class="empty-state"><span class="e-icon">🏰</span>No groups loaded</div>
-      </div>
+  <!-- SEARCH SECTION -->
+  <section class="search-section">
+    <p class="search-label">ENTER ROBLOX USERNAME</p>
+    <div class="search-wrap">
+      <input
+        type="text"
+        id="username-input"
+        class="search-input"
+        placeholder="e.g. Builderman"
+        autocomplete="off"
+        spellcheck="false"
+      />
+      <button class="search-btn" id="search-btn" onclick="searchUser()">SEARCH</button>
     </div>
+    <p class="search-hint">Supports banned accounts · Powered by Roblox Public APIs</p>
+  </section>
 
-    <!-- BADGES -->
-    <div class="section-card">
-      <div class="section-header">
-        <div class="section-title"><span class="s-icon">🏅</span> BADGES</div>
-        <span class="section-count" id="cnt-badges">0</span>
-      </div>
-      <div class="section-body" id="list-badges">
-        <div class="empty-state"><span class="e-icon">🏅</span>No badges loaded</div>
-      </div>
-    </div>
+  <!-- PROFILE ROOT (hidden until search) -->
+  <main id="profile-root" class="profile-root hidden">
 
-    <!-- ACCESSORIES (currently wearing) -->
-    <div class="section-card">
-      <div class="section-header">
-        <div class="section-title"><span class="s-icon">👒</span> AVATAR ACCESSORIES</div>
-        <span class="section-count" id="cnt-acc">0</span>
-      </div>
-      <div class="section-body" id="list-acc">
-        <div class="empty-state"><span class="e-icon">👒</span>No accessories loaded</div>
-      </div>
-    </div>
+    <!-- HERO -->
+    <div class="hero-card" id="hero-card">
+      <div class="grad-bar"></div>
+      <div class="hero-inner">
 
-    <!-- CREATED GAMES -->
-    <div class="section-card">
-      <div class="section-header">
-        <div class="section-title"><span class="s-icon">🎮</span> CREATED GAMES</div>
-        <span class="section-count" id="cnt-games-created">0</span>
-      </div>
-      <div class="section-body" id="list-games-created">
-        <div class="empty-state"><span class="e-icon">🎮</span>No created games</div>
-      </div>
-    </div>
-
-    <!-- FAVORITE GAMES -->
-    <div class="section-card">
-      <div class="section-header">
-        <div class="section-title"><span class="s-icon">⭐</span> FAVORITE GAMES</div>
-        <span class="section-count" id="cnt-games-fav">0</span>
-      </div>
-      <div class="section-body" id="list-games-fav">
-        <div class="empty-state"><span class="e-icon">⭐</span>No favorites loaded</div>
-      </div>
-    </div>
-
-    <!-- INVENTORY -->
-    <div class="section-card dash-full">
-      <div class="section-header">
-        <div class="section-title"><span class="s-icon">🎒</span> PUBLIC INVENTORY (HATS & GEAR)</div>
-        <span class="section-count" id="cnt-inv">0</span>
-      </div>
-      <div class="section-body" id="list-inv">
-        <div class="empty-state"><span class="e-icon">🎒</span>No inventory loaded</div>
-      </div>
-    </div>
-
-  </div><!-- /dash-grid -->
-</div><!-- /profile-root -->
-
-<script>
-const $ = id => document.getElementById(id);
-let currentUID = null;
-
-// ─── UTILITIES ────────────────────────────────────────────────
-function loading(show, text = 'FETCHING PROFILE DATA') {
-  $('loading').classList.toggle('show', show);
-  $('loading-text').textContent = text;
-}
-function toast(msg) {
-  const t = $('toast');
-  t.textContent = msg;
-  t.classList.add('show');
-  setTimeout(() => t.classList.remove('show'), 3000);
-}
-function fmtNum(n) {
-  if (n === undefined || n === null) return '—';
-  if (n >= 1_000_000) return (n / 1_000_000).toFixed(1) + 'M';
-  if (n >= 1_000) return (n / 1_000).toFixed(1) + 'K';
-  return String(n);
-}
-function fmtDate(d) {
-  if (!d) return '—';
-  return new Date(d).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
-}
-async function apiFetch(url) {
-  try {
-    const r = await fetch(url, { headers: { 'Accept': 'application/json' } });
-    if (!r.ok) return null;
-    return await r.json();
-  } catch { return null; }
-}
-async function apiPost(url, body) {
-  try {
-    const r = await fetch(url, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
-      body: JSON.stringify(body)
-    });
-    if (!r.ok) return null;
-    return await r.json();
-  } catch { return null; }
-}
-
-function copyUID() {
-  if (!currentUID) return;
-  navigator.clipboard.writeText(String(currentUID));
-  const btn = $('copy-uid-btn');
-  btn.textContent = 'COPIED!';
-  btn.classList.add('copied');
-  setTimeout(() => { btn.textContent = 'COPY UID'; btn.classList.remove('copied'); }, 2000);
-}
-
-// ─── SEARCH ENTRY ─────────────────────────────────────────────
-$('username-input').addEventListener('keydown', e => { if (e.key === 'Enter') searchUser(); });
-
-async function searchUser() {
-  const username = $('username-input').value.trim();
-  if (!username) { toast('Please enter a username'); return; }
-
-  loading(true, 'RESOLVING USERNAME → USER ID');
-  $('profile-root').classList.remove('show');
-
-  try {
-    // 1. Username → userId
-    const userRes = await apiPost('https://users.roblox.com/v1/usernames/users', {
-      usernames: [username], excludeBannedUsers: false
-    });
-    if (!userRes || !userRes.data || userRes.data.length === 0) {
-      toast('User not found'); loading(false); return;
-    }
-    const basicUser = userRes.data[0];
-    currentUID = basicUser.id;
-
-    loading(true, 'LOADING PROFILE INFO');
-    await buildProfile(currentUID);
-
-  } catch(e) {
-    toast('Error: ' + e.message);
-    loading(false);
-  }
-}
-
-async function buildProfile(uid) {
-  // ── Run all fetches in parallel ──────────────────────────────
-  loading(true, 'FETCHING ALL PROFILE DATA...');
-
-  const [
-    profileData,
-    presenceData,
-    avatarThumb,
-    headshotThumb,
-    bustThumb,
-    friendsData,
-    followersCount,
-    followingCount,
-    groupsData,
-    badgesData,
-    accessoriesData,
-    createdGamesData,
-    favGamesData,
-    inventoryData
-  ] = await Promise.all([
-    apiFetch(`https://users.roblox.com/v1/users/${uid}`),
-    apiPost('https://presence.roblox.com/v1/presence/users', { userIds: [uid] }),
-    apiFetch(`https://thumbnails.roblox.com/v1/users/avatar?userIds=${uid}&size=420x420&format=Png&isCircular=false`),
-    apiFetch(`https://thumbnails.roblox.com/v1/users/avatar-headshot?userIds=${uid}&size=150x150&format=Png&isCircular=false`),
-    apiFetch(`https://thumbnails.roblox.com/v1/users/avatar-bust?userIds=${uid}&size=150x150&format=Png&isCircular=false`),
-    apiFetch(`https://friends.roblox.com/v1/users/${uid}/friends?userSort=Alphabetical`),
-    apiFetch(`https://friends.roblox.com/v1/users/${uid}/followers/count`),
-    apiFetch(`https://friends.roblox.com/v1/users/${uid}/followings/count`),
-    apiFetch(`https://groups.roblox.com/v1/users/${uid}/groups/roles`),
-    apiFetch(`https://badges.roblox.com/v1/users/${uid}/badges?limit=50&sortOrder=Desc`),
-    apiFetch(`https://avatar.roblox.com/v1/users/${uid}/currently-wearing`),
-    apiFetch(`https://games.roblox.com/v1/games/list?model.userId=${uid}&model.isPlayable=true&model.limit=25`),
-    apiFetch(`https://games.roblox.com/v2/users/${uid}/favorite/games?pageSize=25&sortOrder=Asc`),
-    apiFetch(`https://inventory.roblox.com/v1/users/${uid}/items/Asset/8?limit=50&sortOrder=Desc`)
-  ]);
-
-  // ── PROFILE HERO ────────────────────────────────────────────
-  const name = profileData?.displayName || profileData?.name || '—';
-  const uname = profileData?.name || '—';
-  $('display-name').textContent = name;
-  $('at-username').textContent = '@' + uname;
-  $('description-box').textContent = profileData?.description || '';
-
-  // Meta chips
-  const metaHTML = `
-    <div class="meta-chip"><span class="icon">🆔</span> UID: <span>${uid}</span></div>
-    <div class="meta-chip"><span class="icon">📅</span> Joined: <span>${fmtDate(profileData?.created)}</span></div>
-    ${profileData?.isBanned ? '<div class="meta-chip" style="border-color:var(--pink);color:var(--pink)">⛔ BANNED</div>' : ''}
-  `;
-  $('profile-meta').innerHTML = metaHTML;
-
-  // Avatar images
-  const avatarUrl = avatarThumb?.data?.[0]?.imageUrl || '';
-  const headshotUrl = headshotThumb?.data?.[0]?.imageUrl || '';
-  const bustUrl = bustThumb?.data?.[0]?.imageUrl || '';
-
-  $('hero-avatar').src = avatarUrl || 'https://placehold.co/420x420/0f0f1e/444?text=?';
-  $('hero-avatar').onerror = () => { $('hero-avatar').src = 'https://placehold.co/420x420/0f0f1e/444?text=?'; };
-
-  // Busts
-  let bustHTML = '';
-  if (headshotUrl) bustHTML += `<div class="bust-wrap"><img class="bust-img" src="${headshotUrl}" width="60" height="60" alt="headshot"><span class="bust-lbl">HEAD</span></div>`;
-  if (bustUrl) bustHTML += `<div class="bust-wrap"><img class="bust-img" src="${bustUrl}" width="60" height="90" alt="bust"><span class="bust-lbl">BUST</span></div>`;
-  $('avatar-busts').innerHTML = bustHTML;
-
-  // Presence / Status
-  const presence = presenceData?.userPresences?.[0];
-  const statusMap = {
-    0: { cls: 'offline', label: 'OFFLINE' },
-    1: { cls: 'online', label: 'ONLINE' },
-    2: { cls: 'playing', label: 'IN GAME' },
-    3: { cls: 'online', label: 'IN STUDIO' }
-  };
-  const statusType = presence?.userPresenceType ?? 0;
-  const st = statusMap[statusType] || statusMap[0];
-  $('status-dot').className = 'status-dot ' + st.cls;
-  $('status-label').className = 'status-label ' + st.cls;
-  $('status-label').textContent = st.label;
-  if (statusType === 2 && presence?.lastLocation) {
-    $('playing-game').style.display = 'flex';
-    $('playing-game').innerHTML = `🕹️ ${presence.lastLocation}`;
-  }
-
-  // ── STATS ───────────────────────────────────────────────────
-  const friendsList = friendsData?.data || [];
-  const followersNum = followersCount?.count ?? 0;
-  const followingNum = followingCount?.count ?? 0;
-  const groupsList = groupsData?.data || [];
-  const badgesList = badgesData?.data || [];
-  const createdGamesList = createdGamesData?.data || [];
-
-  $('stat-friends').textContent = fmtNum(friendsList.length);
-  $('stat-followers').textContent = fmtNum(followersNum);
-  $('stat-following').textContent = fmtNum(followingNum);
-  $('stat-groups').textContent = fmtNum(groupsList.length);
-  $('stat-badges').textContent = fmtNum(badgesList.length);
-  $('stat-games').textContent = fmtNum(createdGamesList.length);
-
-  // ── FRIENDS LIST ────────────────────────────────────────────
-  $('cnt-friends').textContent = friendsList.length;
-  if (friendsList.length > 0) {
-    // Fetch thumbnails for friends (batch)
-    const friendIds = friendsList.slice(0, 50).map(f => f.id).join(',');
-    const friendThumbsData = await apiFetch(
-      `https://thumbnails.roblox.com/v1/users/avatar-headshot?userIds=${friendIds}&size=100x100&format=Png&isCircular=false`
-    );
-    const thumbMap = {};
-    (friendThumbsData?.data || []).forEach(t => { thumbMap[t.targetId] = t.imageUrl; });
-
-    // Fetch presence for friends
-    const friendPresenceData = await apiPost('https://presence.roblox.com/v1/presence/users', {
-      userIds: friendsList.slice(0, 50).map(f => f.id)
-    });
-    const presMap = {};
-    (friendPresenceData?.userPresences || []).forEach(p => { presMap[p.userId] = p.userPresenceType; });
-
-    $('list-friends').innerHTML = friendsList.slice(0, 50).map(f => {
-      const thumb = thumbMap[f.id] || '';
-      const pType = presMap[f.id] ?? 0;
-      const fst = statusMap[pType] || statusMap[0];
-      return `<div class="friend-item">
-        <img class="friend-thumb" src="${thumb}" alt="${f.name}" onerror="this.src='https://placehold.co/42x42/13132a/444?text=?'">
-        <div class="friend-meta">
-          <div class="friend-name">${escHtml(f.displayName || f.name)}</div>
-          <div class="friend-status">
-            <span class="status-dot ${fst.cls}"></span>
-            <span class="status-label ${fst.cls}" style="font-size:0.7rem">${fst.label}</span>
+        <!-- Left: Avatar -->
+        <div class="avatar-col">
+          <div class="avatar-ring">
+            <img id="hero-avatar" class="avatar-img" src="" alt="Avatar"/>
           </div>
+          <div class="status-row" id="status-row">
+            <span class="status-dot" id="status-dot"></span>
+            <span class="status-label" id="status-label">OFFLINE</span>
+          </div>
+          <p id="playing-game" class="playing-game hidden"></p>
+          <div class="bust-row" id="bust-row"></div>
         </div>
-        <button class="search-friend-btn" onclick="searchFriend('${escHtml(f.name)}')">VIEW</button>
-      </div>`;
-    }).join('');
-  }
 
-  // ── GROUPS ─────────────────────────────────────────────────
-  $('cnt-groups').textContent = groupsList.length;
-  if (groupsList.length > 0) {
-    $('list-groups').innerHTML = groupsList.map(g => {
-      const grp = g.group;
-      const role = g.role?.name || '—';
-      const iconUrl = `https://thumbnails.roblox.com/v1/groups/icons?groupIds=${grp.id}&size=150x150&format=Png`;
-      return `<div class="group-item">
-        <div class="group-icon">
-          <img src="https://www.roblox.com/asset-thumbnail/image?assetId=${grp.id}&width=150&height=150&format=png" 
-            onerror="this.parentElement.innerHTML='🏰'" alt="group">
+        <!-- Right: Info -->
+        <div class="profile-info">
+          <div class="banned-banner hidden" id="banned-banner">⛔ BANNED ACCOUNT</div>
+          <h2 class="display-name" id="display-name">—</h2>
+          <div class="username-row">
+            <span class="at-username" id="at-username">@—</span>
+            <button class="copy-btn" id="copy-uid-btn">COPY UID</button>
+          </div>
+          <div class="meta-chips" id="meta-chips"></div>
+          <div class="desc-box" id="desc-box"></div>
         </div>
-        <div style="min-width:0;flex:1">
-          <div class="group-name">${escHtml(grp.name)}</div>
-          <div class="group-role">${escHtml(role)}</div>
-        </div>
-        <div style="font-size:0.68rem;color:var(--muted);letter-spacing:1px;flex-shrink:0">
-          ${fmtNum(grp.memberCount)} members
-        </div>
-      </div>`;
-    }).join('');
-  }
 
-  // ── BADGES ─────────────────────────────────────────────────
-  $('cnt-badges').textContent = badgesList.length;
-  if (badgesList.length > 0) {
-    $('list-badges').innerHTML = `<div class="badges-grid">${
-      badgesList.map(b => {
-        const imgUrl = b.displayIconImageId
-          ? `https://www.roblox.com/asset-thumbnail/image?assetId=${b.displayIconImageId}&width=150&height=150&format=png`
-          : 'https://placehold.co/48x48/13132a/444?text=B';
-        return `<div class="badge-item" title="${escHtml(b.displayName)}">
-          <img class="badge-img" src="${imgUrl}" alt="${escHtml(b.displayName)}" onerror="this.src='https://placehold.co/48x48/13132a/444?text=B'">
-          <div class="badge-name">${escHtml(b.displayName)}</div>
-        </div>`;
-      }).join('')
-    }</div>`;
-  }
-
-  // ── ACCESSORIES (currently wearing) ────────────────────────
-  const accIds = accessoriesData?.assetIds || [];
-  $('cnt-acc').textContent = accIds.length;
-  if (accIds.length > 0) {
-    // Fetch asset details
-    const accDetails = await Promise.all(
-      accIds.slice(0, 20).map(id => apiFetch(`https://economy.roblox.com/v2/assets/${id}/details`))
-    );
-    $('list-acc').innerHTML = accIds.slice(0, 20).map((id, i) => {
-      const detail = accDetails[i];
-      const accName = detail?.Name || `Asset #${id}`;
-      const imgUrl = `https://www.roblox.com/asset-thumbnail/image?assetId=${id}&width=150&height=150&format=png`;
-      return `<div class="acc-item">
-        <img class="acc-img" src="${imgUrl}" alt="${escHtml(accName)}" onerror="this.src='https://placehold.co/48x48/13132a/444?text=?'">
-        <div style="min-width:0">
-          <div class="acc-name">${escHtml(accName)}</div>
-          <div class="acc-id">ID: ${id}</div>
-        </div>
-      </div>`;
-    }).join('');
-  }
-
-  // ── CREATED GAMES ───────────────────────────────────────────
-  $('cnt-games-created').textContent = createdGamesList.length;
-  if (createdGamesList.length > 0) {
-    await renderGames('list-games-created', createdGamesList);
-  }
-
-  // ── FAVORITE GAMES ──────────────────────────────────────────
-  const favList = favGamesData?.data || [];
-  $('cnt-games-fav').textContent = favList.length;
-  if (favList.length > 0) {
-    await renderGames('list-games-fav', favList);
-  }
-
-  // ── INVENTORY ───────────────────────────────────────────────
-  const invItems = inventoryData?.data || [];
-  $('cnt-inv').textContent = invItems.length;
-  if (invItems.length > 0) {
-    $('list-inv').innerHTML = `<div class="inv-grid">${
-      invItems.slice(0, 48).map(item => {
-        const iid = item.assetId || item.id || '';
-        const iname = item.name || `Item #${iid}`;
-        const imgUrl = iid ? `https://www.roblox.com/asset-thumbnail/image?assetId=${iid}&width=150&height=150&format=png` : '';
-        return `<div class="inv-item" title="${escHtml(iname)}">
-          <img class="inv-img" src="${imgUrl}" alt="${escHtml(iname)}" onerror="this.src='https://placehold.co/52x52/13132a/444?text=?'">
-          <div class="inv-name">${escHtml(iname)}</div>
-        </div>`;
-      }).join('')
-    }</div>`;
-  }
-
-  // Show everything
-  loading(false);
-  $('profile-root').classList.add('show');
-  window.scrollTo({ top: 0, behavior: 'smooth' });
-}
-
-async function renderGames(containerId, gameList) {
-  // Get thumbnails
-  const universeIds = gameList.slice(0, 25)
-    .map(g => g.universeId || g.id || g.rootPlaceId)
-    .filter(Boolean);
-
-  let thumbMap = {};
-  if (universeIds.length > 0) {
-    const thumbRes = await apiFetch(
-      `https://thumbnails.roblox.com/v1/games/multiget/thumbnails?universeIds=${universeIds.join(',')}&countPerUniverse=1&defaults=true&size=480x270&format=Png`
-    );
-    (thumbRes?.data || []).forEach(t => {
-      if (t.thumbnails?.[0]) thumbMap[t.universeId] = t.thumbnails[0].imageUrl;
-    });
-  }
-
-  $(containerId).innerHTML = gameList.slice(0, 25).map(g => {
-    const uid2 = g.universeId || g.id;
-    const gname = g.name || g.placeId || '—';
-    const thumbUrl = thumbMap[uid2] || 'https://placehold.co/56x40/13132a/444?text=?';
-    const visits = g.visits !== undefined ? fmtNum(g.visits) + ' visits' : '';
-    const created = g.created ? fmtDate(g.created) : '';
-    return `<div class="game-item">
-      <img class="game-thumb" src="${thumbUrl}" alt="${escHtml(gname)}" onerror="this.src='https://placehold.co/56x40/13132a/444?text=?'">
-      <div style="min-width:0">
-        <div class="game-name">${escHtml(gname)}</div>
-        <div class="game-info">${[visits, created].filter(Boolean).join(' · ')}</div>
       </div>
-    </div>`;
-  }).join('');
-}
+    </div>
 
-function searchFriend(username) {
-  $('username-input').value = username;
-  searchUser();
-}
+    <!-- STATS ROW -->
+    <div class="stats-row" id="stats-row">
+      <div class="stat-card"><span class="stat-num" id="s-friends">—</span><span class="stat-lbl">FRIENDS</span></div>
+      <div class="stat-card"><span class="stat-num" id="s-followers">—</span><span class="stat-lbl">FOLLOWERS</span></div>
+      <div class="stat-card"><span class="stat-num" id="s-following">—</span><span class="stat-lbl">FOLLOWING</span></div>
+      <div class="stat-card"><span class="stat-num" id="s-groups">—</span><span class="stat-lbl">GROUPS</span></div>
+      <div class="stat-card"><span class="stat-num" id="s-badges">—</span><span class="stat-lbl">BADGES</span></div>
+      <div class="stat-card"><span class="stat-num" id="s-games">—</span><span class="stat-lbl">GAMES</span></div>
+    </div>
 
-function escHtml(str) {
-  if (!str) return '';
-  return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
-}
-</script>
+    <!-- DASHBOARD GRID -->
+    <div class="dash-grid">
+
+      <!-- FRIENDS -->
+      <div class="section-card">
+        <div class="section-header">
+          <span class="section-title">👥 FRIENDS</span>
+          <span class="section-count" id="c-friends">0</span>
+        </div>
+        <div class="section-body scroll-list" id="list-friends">
+          <div class="empty-state">👥<br/>No friends loaded</div>
+        </div>
+      </div>
+
+      <!-- GROUPS -->
+      <div class="section-card">
+        <div class="section-header">
+          <span class="section-title">🏰 GROUPS</span>
+          <span class="section-count" id="c-groups">0</span>
+        </div>
+        <div class="section-body scroll-list" id="list-groups">
+          <div class="empty-state">🏰<br/>No groups loaded</div>
+        </div>
+      </div>
+
+      <!-- BADGES -->
+      <div class="section-card">
+        <div class="section-header">
+          <span class="section-title">🏅 BADGES</span>
+          <span class="section-count" id="c-badges">0</span>
+        </div>
+        <div class="section-body scroll-list" id="list-badges">
+          <div class="empty-state">🏅<br/>No badges loaded</div>
+        </div>
+      </div>
+
+      <!-- ACCESSORIES -->
+      <div class="section-card">
+        <div class="section-header">
+          <span class="section-title">👒 AVATAR ACCESSORIES</span>
+          <span class="section-count" id="c-acc">0</span>
+        </div>
+        <div class="section-body scroll-list" id="list-acc">
+          <div class="empty-state">👒<br/>No accessories loaded</div>
+        </div>
+      </div>
+
+      <!-- CREATED GAMES -->
+      <div class="section-card">
+        <div class="section-header">
+          <span class="section-title">🎮 CREATED GAMES</span>
+          <span class="section-count" id="c-games-c">0</span>
+        </div>
+        <div class="section-body scroll-list" id="list-games-c">
+          <div class="empty-state">🎮<br/>No created games</div>
+        </div>
+      </div>
+
+      <!-- FAVORITE GAMES -->
+      <div class="section-card">
+        <div class="section-header">
+          <span class="section-title">⭐ FAVORITE GAMES</span>
+          <span class="section-count" id="c-games-f">0</span>
+        </div>
+        <div class="section-body scroll-list" id="list-games-f">
+          <div class="empty-state">⭐<br/>No favorites loaded</div>
+        </div>
+      </div>
+
+      <!-- INVENTORY (full width) -->
+      <div class="section-card full-width">
+        <div class="section-header">
+          <span class="section-title">🎒 PUBLIC INVENTORY</span>
+          <span class="section-count" id="c-inv">0</span>
+        </div>
+        <div class="section-body scroll-list" id="list-inv">
+          <div class="empty-state">🎒<br/>No inventory loaded</div>
+        </div>
+      </div>
+
+    </div><!-- /dash-grid -->
+  </main>
+
+  <script src="app.js"></script>
 </body>
 </html>
